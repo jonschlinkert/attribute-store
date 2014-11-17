@@ -1,6 +1,6 @@
 # attribute-store [![NPM version](https://badge.fury.io/js/attribute-store.svg)](http://badge.fury.io/js/attribute-store)
 
-> Store data from YAML front matter in HTML data-attributes.
+> Store template context on data attributes in static HTML, allowing metadata to be retrieved/updated post-render.
 
 ## Install
 ### Install with [npm](npmjs.org):
