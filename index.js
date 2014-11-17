@@ -1,28 +1,33 @@
+'use strict';
+
+/**
+ * Module dependencies
+ */
+
 var cheerio = require('cheerio');
 var matter = require('gray-matter');
 var _ = require('lodash');
 
-var Store = function (html) {
+function Store(html) {
   this.html = html;
-};
+}
 
 Store.prototype.set = function(id, context) {
-  if (_.isObject(id)) {
+  if (typeof id !== 'string') {
     context = id;
-    id = undefined;
+    id = null;
   }
+
   context = context || {};
+  id = id || context.id || 'metadata';
 
   var page = matter(this.html);
-  var _id = id || context.id || 'metadata';
-
-  var metadata = _.extend({}, context, page.context);
   var content = page.content;
+
   var $ = cheerio.load(content);
 
-  var script = '<script type="text/x-metadata" id="'+_id+'"></script>';
-
-  if ($('#' + _id).length === 0) {
+  var script = '<script type="text/x-metadata" id="' + id + '"></script>';
+  if ($('#' + id).length === 0) {
     if ($('body').length) {
       $('body').append(script);
       content = $.html();
@@ -31,19 +36,24 @@ Store.prototype.set = function(id, context) {
     }
   }
 
+  var data = _.merge({}, context, page.data);
+  var attr = $('#' + id).attr('data-metadata');
+  if (attr) {
+    data = _.merge({}, JSON.parse(attr), data);
+  }
+
   $ = cheerio.load(content);
-  $('#' + _id).attr('data-metadata', JSON.stringify(metadata));
+  $('#' + id).attr('data-metadata', JSON.stringify(data));
 
   this.html = $.html();
 };
 
 
 Store.prototype.get = function(id) {
-  var _id = id || 'metadata';
-  var results = cheerio.load(this.html)('#' + _id).data('metadata');
+  var id = id || 'metadata';
+  var results = cheerio.load(this.html)('#' + id).data('metadata');
   return results;
 };
-
 
 module.exports = function(html) {
   return new Store(html);
